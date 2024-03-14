@@ -8,7 +8,7 @@ const API_SECRET = "Bxxxxxxxg="
 const MAX_VOLUME = 111000
 /////////////
 
-function delay(ms) {
+const wait = async (ms) => {
     return new Promise(resolve => {
         setTimeout(resolve, ms);
     });
@@ -60,7 +60,7 @@ const init = async (client) => {
         console.log("============================\n")
 
         console.log(getNowFormatDate(), "Waiting 10 seconds...");
-        await delay(10000);
+        await wait(10000);
 
         let userbalance = await client.Balance();
         let usdcTradeAvailable = randomFloat(100, 220);
@@ -84,16 +84,10 @@ const init = async (client) => {
         console.log(getNowFormatDate(), `Try again... (${e.message})`);
         console.log("=======================")
 
-        await delay(3000);
+        await wait(3000);
         init(client);
 
     }
-}
-
-const wait = async (ms) => {
-    return new Promise(resolve => {
-        setTimeout(resolve, ms);
-    });
 }
 
 const random = (min, max) => {
