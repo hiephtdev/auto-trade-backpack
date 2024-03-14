@@ -3,11 +3,8 @@
   "version": "1",
   "description": "aauto_trade on  Backpack exchange typescript",
   "license": "MIT",
-  "types": "lib/backpack_client.d.ts",
-  "homepage": "https://github.com/solotop999/auto_trade_backpack_exchange",
   "repository": {
     "type": "git",
-    "url": "https://github.com/solotop999/auto_trade_backpack_exchange"
   },
   "scripts": {
     "build": "tsc",
