@@ -5,7 +5,15 @@ const backpack_client_1 = require("./backpack_client");
 /// EDIT HERE ///
 const API_KEY = "SxxxxxxTc="
 const API_SECRET = "Bxxxxxxxg="
+const MAX_VOLUME = 111000
 /////////////
+
+function delay(ms) {
+    return new Promise(resolve => {
+        setTimeout(resolve, ms);
+    });
+}
+
 
 function getNowFormatDate() {
     var date = new Date();
@@ -52,11 +60,17 @@ const init = async (client) => {
         console.log("============================\n")
 
         console.log(getNowFormatDate(), "Waiting 10 seconds...");
-        await wait(10000);
+        await delay(10000);
 
         let userbalance = await client.Balance();
         let usdcTradeAvailable = randomFloat(100, 220);
         if (userbalance.USDC.available < usdcTradeAvailable) {
+            console.log("Not enough USDC balance!")
+            cancelJob = true;
+            return;
+        }
+        if (totalVolume > MAX_VOLUME) {
+            console.log("Job done!")
             cancelJob = true;
             return;
         }
@@ -70,7 +84,7 @@ const init = async (client) => {
         console.log(getNowFormatDate(), `Try again... (${e.message})`);
         console.log("=======================")
 
-        await wait(3000);
+        await delay(3000);
         init(client);
 
     }
@@ -105,7 +119,7 @@ const sellfun = async (client) => {
     let quantitys = (userbalance.SOL.available - 0.02).toFixed(2).toString();
     if (Number.parseFloat(quantitys) < 0.01 || Number.parseFloat(userbalance.SOL.available) < 0.02) {
         buyFlag = true;
-        throw new Error("Sell Not Enough SOL Balance");
+        throw new Error("Sell not enough SOL balance");
     }
     console.log(getNowFormatDate(), `Trade... ${quantitys} $SOL to ${(lastPriceask * quantitys).toFixed(2)} $USDC`);
     let orderResultAsk = await client.ExecuteOrder({
