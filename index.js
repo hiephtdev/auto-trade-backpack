@@ -14,7 +14,6 @@ const wait = async (ms) => {
     });
 }
 
-
 function getNowFormatDate() {
     var date = new Date();
     var seperator1 = "-";
@@ -54,6 +53,7 @@ const init = async (client) => {
     try {
         if (cancelJob) {
             console.log(getNowFormatDate(), "Job canceled");
+            return;
         }
         console.log("\n============================")
         console.log(`Total Buy: ${successbuy} | Total Sell: ${sellbuy} | Total Volume: ${totalVolume} USDC`);
