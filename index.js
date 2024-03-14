@@ -6,6 +6,7 @@ const backpack_client_1 = require("./backpack_client");
 const API_KEY = "SxxxxxxTc="
 const API_SECRET = "Bxxxxxxxg="
 const MAX_VOLUME = 111000
+const SWAP_VOLUME = [100,220]
 /////////////
 
 const wait = async (ms) => {
@@ -63,7 +64,7 @@ const init = async (client) => {
         await wait(10000);
 
         let userbalance = await client.Balance();
-        let usdcTradeAvailable = randomFloat(100, 220);
+        let usdcTradeAvailable = randomFloat(SWAP_VOLUME[0], SWAP_VOLUME[1]);
         if (userbalance.USDC.available < usdcTradeAvailable) {
             console.log("Not enough USDC balance!")
             cancelJob = true;
