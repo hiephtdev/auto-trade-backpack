@@ -70,7 +70,7 @@ const init = async (client) => {
         console.log(getNowFormatDate(), `Try again... (${e.message})`);
         console.log("=======================")
 
-        await delay(3000);
+        await wait(3000);
         init(client);
 
     }
