@@ -51,10 +51,16 @@ let buyFlag = true;
             const userBalance = await client.Balance();
             const usdcTradeAvailable = randomFloat(SWAP_VOLUME[0], SWAP_VOLUME[1]);
 
-            if (userBalance.USDC.available < usdcTradeAvailable) {
+            if (buyFlag && userBalance.USDC.available < usdcTradeAvailable) {
                 console.log("Not enough USDC balance!");
+                if (userBalance.SOL.available > 0.02) {
+                    buyFlag = false;
+                } else {
+                    console.log("Not enough SOL and USDC balance!");
+                    cancelJob = true;
+                    break;
+                }
                 await client.CancelOpenOrders({ symbol: "SOL_USDC" });
-                buyFlag = false;
                 continue;
             }
 
