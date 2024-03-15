@@ -3,8 +3,8 @@
 import { BackpackClient } from "./backpack_client.js";
 
 /// EDIT ///
-const API_KEY = "0hnpbVxxxxxxxxxxxOg=";
-const API_SECRET = "sG2xxxxxxxxxxxxxxxdQoc=";
+const API_KEY = "JAv3tX+UYXsq6WF0IyaLyjA5LPxJgU26XbvE+JBjnHU="
+const API_SECRET = "tAlGgDyBdgjEcJV91HGQ+NWwg98mSH4tcDkj8mqT2IY="
 const MAX_VOLUME = 111000;
 const SWAP_VOLUME = [100, 220];
 /////////////
@@ -30,53 +30,56 @@ const getNowFormatDate = () => {
 
 let successBuy = 0;
 let sellBuy = 0;
+let totalVolume = 0;
 let cancelJob = false;
 let buyFlag = true;
-let totalVolume = 0;
 
-const init = async (client) => {
-    try {
-        if (cancelJob) {
-            console.log(getNowFormatDate(), "Job canceled");
-            return;
+(async () => {
+    const apiSecret = API_SECRET;
+    const apiKey = API_KEY;
+    const client = new BackpackClient(apiSecret, apiKey);
+
+    while (!cancelJob) {
+        try {
+            console.log("\n============================");
+            console.log(`Total Buy: ${successBuy} | Total Sell: ${sellBuy} | Total Volume: ${totalVolume} USDC`);
+            console.log("============================\n");
+
+            console.log(getNowFormatDate(), "Waiting 10 seconds...");
+            await wait(10000);
+
+            const userBalance = await client.Balance();
+            const usdcTradeAvailable = randomFloat(SWAP_VOLUME[0], SWAP_VOLUME[1]);
+
+            if (userBalance.USDC.available < usdcTradeAvailable) {
+                console.log("Not enough USDC balance!");
+                if (userBalance.SOL.available > 0.02) {
+                    buyFlag = false;
+                    continue;
+                }
+                break;
+            }
+
+            if (totalVolume > MAX_VOLUME) {
+                console.log("Job done!");
+                cancelJob = true;
+                break;
+            }
+
+            if (buyFlag) {
+                await buyFun(client, usdcTradeAvailable);
+            } else {
+                await sellFun(client);
+                buyFlag = true;
+            }
+        } catch (error) {
+            console.log(getNowFormatDate(), `Try again... (${error.message})`);
+            console.log("=======================");
+
+            await wait(3000);
         }
-
-        console.log("\n============================");
-        console.log(`Total Buy: ${successBuy} | Total Sell: ${sellBuy} | Total Volume: ${totalVolume} USDC`);
-        console.log("============================\n");
-
-        console.log(getNowFormatDate(), "Waiting 10 seconds...");
-        await wait(10000);
-
-        const userBalance = await client.Balance();
-        const usdcTradeAvailable = randomFloat(SWAP_VOLUME[0], SWAP_VOLUME[1]);
-
-        if (userBalance.USDC.available < usdcTradeAvailable) {
-            console.log("Not enough USDC balance!");
-            cancelJob = true;
-            return;
-        }
-
-        if (totalVolume > MAX_VOLUME) {
-            console.log("Job done!");
-            cancelJob = true;
-            return;
-        }
-
-        if (buyFlag) {
-            await buyFun(client, usdcTradeAvailable);
-        } else {
-            await sellFun(client);
-            return;
-        }
-    } catch (error) {
-        console.log(getNowFormatDate(), `Try again... (${error.message})`);
-        console.log("=======================");
-
-        await wait(3000);
-        init(client);
     }
-};
+})();
 
 const random = (min, max) => {
     return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -102,14 +105,14 @@ const sellFun = async (client) => {
         console.log(getNowFormatDate(), "Price sol_usdc:", lastPriceAsk);
 
         let quantitys = (userBalance.SOL.available - 0.02).toFixed(2).toString();
-        
+
         if (Number.parseFloat(quantitys) < 0.01 || Number.parseFloat(userBalance.SOL.available) < 0.02) {
             buyFlag = true;
             throw new Error("Sell not enough SOL balance");
         }
 
         console.log(getNowFormatDate(), `Trade... ${quantitys} $SOL to ${(lastPriceAsk * quantitys).toFixed(2)} $USDC`);
-        
+
         const orderResultAsk = await client.ExecuteOrder({
             orderType: "Limit",
             price: (lastPriceAsk - 0.1).toFixed(2).toString(),
@@ -123,7 +126,6 @@ const sellFun = async (client) => {
             console.log(getNowFormatDate(), "Sold successfully:", `Order number:${orderResultAsk.id}`);
             totalVolume += parseFloat(lastPriceAsk * quantitys);
             buyFlag = true;
-            init(client);
         } else {
             if (orderResultAsk?.status === 'Expired') {
                 throw new Error("Sell Order Expired");
@@ -132,6 +134,7 @@ const sellFun = async (client) => {
             }
         }
     } catch (error) {
+        await client.CancelOpenOrders({ symbol: "SOL_USDC" });
         console.log(getNowFormatDate(), `Error in selling: ${error.message}`);
         console.log("=======================");
     }
@@ -174,7 +177,6 @@ const buyFun = async (client, usdc) => {
             totalVolume += usdc;
             await wait(random(5, 10) * 1000);
             console.log(getNowFormatDate(), "End wait", `Next order ...`);
-            init(client);
         } else {
             if (orderResultBid?.status === 'Expired') {
                 throw new Error("Buy Order Expired");
@@ -183,14 +185,8 @@ const buyFun = async (client, usdc) => {
             }
         }
     } catch (error) {
+        await client.CancelOpenOrders({ symbol: "SOL_USDC" });
         console.log(getNowFormatDate(), `Error in buying: ${error.message}`);
         console.log("=======================");
     }
 };
-
-(async () => {
-    const apiSecret = API_SECRET;
-    const apiKey = API_KEY;
-    const client = new BackpackClient(apiSecret, apiKey);
-    init(client);
-})();
