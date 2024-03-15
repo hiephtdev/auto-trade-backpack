@@ -3,8 +3,8 @@
 import { BackpackClient } from "./backpack_client.js";
 
 /// EDIT ///
-const API_KEY = "JAv3tX+UYXsq6WF0IyaLyjA5LPxJgU26XbvE+JBjnHU="
-const API_SECRET = "tAlGgDyBdgjEcJV91HGQ+NWwg98mSH4tcDkj8mqT2IY="
+const API_KEY = "JAv3tX+UYXsxxxxbvE+JBjnHU="
+const API_SECRET = "tAlGgDyBdxxxxx8mSH4tcDkj8mqT2IY="
 const MAX_VOLUME = 111000;
 const SWAP_VOLUME = [100, 220];
 /////////////
@@ -57,7 +57,8 @@ let buyFlag = true;
                     buyFlag = false;
                     continue;
                 }
-                break;
+                await client.CancelOpenOrders({ symbol: "SOL_USDC" });
+                continue;
             }
 
             if (totalVolume > MAX_VOLUME) {
