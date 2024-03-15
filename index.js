@@ -53,11 +53,8 @@ let buyFlag = true;
 
             if (userBalance.USDC.available < usdcTradeAvailable) {
                 console.log("Not enough USDC balance!");
-                if (userBalance.SOL.available > 0.02) {
-                    buyFlag = false;
-                    continue;
-                }
                 await client.CancelOpenOrders({ symbol: "SOL_USDC" });
+                buyFlag = false;
                 continue;
             }
 
